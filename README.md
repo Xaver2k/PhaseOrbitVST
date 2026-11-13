@@ -1,11 +1,11 @@
 # Phase Orbit 0.1 — Windows VST3 project
 
-Status: früher Prototyp. Windows-x64-VST3-Build und Audiokern-Tests am 13.11.2026 erfolgreich. Oberfläche, MIDI-Routing und Betrieb in Ableton sind noch nicht im Host geprüft. GitHub-Actions-Artefakte enthalten das kompilierte Plugin; der Repository-Quellcode allein ist kein installierbares Plugin.
+Status: früher Prototyp. Windows-x64-VST3-Build und Audiokern-Tests am 13.11.2026 erfolgreich. Oberfläche, MIDI-Routing und Betrieb in Ableton sind noch nicht im Host geprüft. Die Vorabversion unter Releases enthält das kompilierte Plugin; der Repository-Quellcode allein ist kein installierbares Plugin.
 
 
 ## Installation des fertigen Downloads
 
-1. GitHub-Actions-Artefakt `PhaseOrbit-Windows-x64-VST3` herunterladen und vollständig entpacken.
+1. Unter [Releases](https://github.com/Xaver2k/PhaseOrbitVST/releases) das fertige Windows-Plugin-ZIP herunterladen und vollständig entpacken. Die GitHub-ZIPs „Source code“ sind nur für die Entwicklung.
 2. Den **äußeren Ordner `Phase Orbit.vst3` samt Contents-Unterordner** nach `C:\Program Files\Common Files\VST3` kopieren. Nicht nur die innere gleichnamige Binärdatei kopieren. Keine ZIPs, Quellcode-Archive, README, .lib oder .exp in den VST3-Ordner kopieren.
 3. Ableton öffnen: Einstellungen -> Plug-Ins -> VST3-Systemordner verwenden aktivieren und neu scannen. Die Bezeichnungen hängen von Version und Sprache ab.
 4. Im Ableton-Browser unter Plug-Ins nach **Phase Orbit** suchen und auf eine Audiospur ziehen. Bei einer MIDI-Spur muss der Effekt hinter einem Instrument stehen.
