@@ -1,0 +1,33 @@
+name: Windows VST3
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release --target PhaseOrbit_VST3 EngineTests --parallel
+      - name: Test DSP
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Package source and notices
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force package | Out-Null
+          Copy-Item "build/PhaseOrbit_artefacts/Release/VST3/*" package -Recurse
+          Copy-Item LICENSE, README.md package
+          git archive --format=zip --output=package/PhaseOrbit-source.zip HEAD
+          tar -a -c -f package/JUCE-8.0.6-source.zip -C build/_deps juce-src
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PhaseOrbit-Windows-x64-VST3
+          path: package/
+          retention-days: 7
+          if-no-files-found: error
