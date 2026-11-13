@@ -1,0 +1,64 @@
+name: Publish v0.1.0 preview
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-preview.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download verified Windows build
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh run download 43458848931 --name PhaseOrbit-Windows-x64-VST3 --dir original
+          test -f "original/Phase Orbit.vst3/Contents/x86_64-win/Phase Orbit.vst3"
+          mkdir -p install dist
+          cp -R "original/Phase Orbit.vst3" install/
+          cp README.md LICENSE install/
+          cat > install/THIRD-PARTY-NOTICES.txt <<'NOTICES'
+          Phase Orbit uses JUCE 8.0.6 under AGPLv3.
+          The matching JUCE source and its included third-party notices are supplied
+          as JUCE-8.0.6-source.zip on this release. See juce-src/LICENSE.md and
+          the license files referenced there, including the VST3 SDK license.
+          The exact original plugin build sources are in PhaseOrbit-source.zip.
+          The plugin has no installer, digital signature, or output limiter.
+          NOTICES
+          cp original/PhaseOrbit-source.zip dist/PhaseOrbit-v0.1.0-source.zip
+          cp original/JUCE-8.0.6-source.zip dist/
+          (cd install && zip -r ../dist/PhaseOrbit-v0.1.0-Windows-x64-VST3.zip .)
+          (cd dist && sha256sum *.zip > SHA256SUMS.txt)
+          unzip -t dist/PhaseOrbit-v0.1.0-Windows-x64-VST3.zip
+      - name: Publish public prerelease
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'NOTES'
+          ## Phase Orbit v0.1.0 — erste Vorabversion
+          
+          Windows-x64-VST3-Audioeffekt mit 8-stufigem Phaser, moduliertem Delay für Chorus-/Flanger-artige Klänge, Stereo-Modulation und vier zuweisbaren Makros. Mit MIDI-Learn, Tastatursteuerung und Host-Automation.
+          
+          **Zum Installieren:** PhaseOrbit-v0.1.0-Windows-x64-VST3.zip herunterladen und entpacken. Den gesamten Ordner Phase Orbit.vst3 nach C:\Program Files\Common Files\VST3 kopieren. In Ableton den VST3-Systemordner aktivieren, neu scannen und Phase Orbit auf eine Spur mit Audio ziehen. Die enthaltene README erklärt die Bedienung.
+          
+          **Teststatus:** Windows-Build und Audiokern-Tests erfolgreich. Oberfläche, MIDI und Betrieb in Ableton sind noch nicht im Host geprüft. Früher Prototyp, kein Installer, keine Signatur und kein Ausgangslimiter. Zunächst bei niedriger Abhörlautstärke testen.
+          
+          **Downloads**
+          - Windows-x64-VST3.zip: fertiges Plugin, aktuelle Anleitung, Lizenz und Hinweise.
+          - PhaseOrbit-v0.1.0-source.zip: exakter ursprünglicher Quellcode des kompilierten Plugins (Build-Commit 0d7e8d706a21aba62af80f37562ad2418ac45bbb); dessen README ist älter als die Anleitung im Plugin-ZIP.
+          - JUCE-8.0.6-source.zip: verwendete Framework-Quellen einschließlich Lizenztexte.
+          - SHA256SUMS.txt: Prüfsummen der drei ZIP-Dateien.
+          
+          Lizenz: AGPL-3.0-only; Abhängigkeiten behalten ihre jeweiligen Lizenzen. Die automatisch von GitHub angebotenen Source-code-Archive enthalten keine Plugin-Binärdatei.
+          NOTES
+          gh release create v0.1.0 --target "$GITHUB_SHA" --title "Phase Orbit v0.1.0 — Preview" --notes-file release-notes.md --prerelease --draft dist/*
+          gh release edit v0.1.0 --draft=false --prerelease
